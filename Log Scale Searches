@@ -1,0 +1,7 @@
+=============================
+List Process vs DNS Requests
+=============================
+event_simpleName = "DnsRequest"
+| select @timestamp, aid as host_id, DomainName as dns_query, FileName as process, FilePath
+| sort by @timestamp desc
+
