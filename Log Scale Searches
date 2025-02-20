@@ -4,4 +4,26 @@ List Process vs DNS Requests
 event_simpleName = "DnsRequest"
 | select @timestamp, aid as host_id, DomainName as dns_query, FileName as process, FilePath
 | sort by @timestamp desc
+=============================
+Search for specific Domain
+=============================
+event_simpleName = "DnsRequest"
+| DomainName = "malicious.com"
+| select @timestamp, aid as host_id, DomainName as dns_query, FileName as process, FilePath
+| sort by @timestamp desc
+=============================
+Search for specific Process
+=============================
+event_simpleName = "DnsRequest"
+| FileName !~ "svchost.exe"
+| select @timestamp, aid as host_id, DomainName as dns_query, FileName as process, FilePath
+| sort by @timestamp desc
+=============================
+Process Lifecycle
+=============================
+FileName = "a.exe"
+| select @timestamp, event_simpleName as event_type, aid as host_id, ParentBaseFileName as parent_process, FilePath, CommandLine, TargetFileName, TargetProcessId, RemoteAddress, RemotePort
+| sort by @timestamp asc
+=============================
 
+=============================
