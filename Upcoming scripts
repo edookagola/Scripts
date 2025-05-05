@@ -1,0 +1,33 @@
+Upcoming scripts
+
+Process Monitoring & Suspicious Activity Detection
+Script to monitor running processes and flag suspicious behavior like:
+Unusual parent-child relationships
+LOLBins (e.g., rundll32, mshta, wmic being used abnormally)
+
+File Integrity Monitoring (FIM)
+Monitor critical directories (e.g., C:\Windows\System32) for changes using hashes and alert on anomalies.
+
+Real-time Syslog Parser for Malicious Patterns
+Parses live syslog or Windows Event Logs for signs of credential dumping, lateral movement, or privilege escalation.
+
+Network Connection Analyzer
+Detects unusual or blacklisted outbound connections (e.g., to known C2 IPs or TOR nodes).
+
+Suspicious PowerShell Command Detection
+Parses command history or real-time execution to detect obfuscated or encoded PowerShell payloads.
+
+USB Device Insertion Logger
+Logs whenever a USB device is inserted/removed and captures device info (vendor ID, serial, etc.).
+
+YARA Rule Scanner
+Applies YARA rules across system memory, file systems, or logs to detect malware signatures.
+
+Mimikatz Artifact Detection
+Checks memory or disk for known Mimikatz artifacts, strings, or behaviors.
+
+Scheduled Task Auditor
+Enumerates scheduled tasks and flags unusual or hidden ones (e.g., base64-encoded commands, unexpected user accounts).
+
+Windows Registry Honeytoken Alert System
+Creates fake but sensitive-looking registry keys and logs any access to them as a potential red flag.
