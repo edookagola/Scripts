@@ -1,0 +1,33 @@
+# Install PSSQLite module (Run once, requires admin or allow install for current user)
+if (-not (Get-Module -ListAvailable -Name PSSQLite)) {
+    Install-Module -Name PSSQLite -Scope CurrentUser -Force
+}
+
+Import-Module PSSQLite
+
+# Path to Brave history file
+$braveHistoryPath = "$env:LOCALAPPDATA\BraveSoftware\Brave-Browser\User Data\Default\History"
+
+# Ensure Brave is closed to prevent DB lock
+if (Get-Process -Name "brave" -ErrorAction SilentlyContinue) {
+    Write-Warning "Brave is currently running. Please close it before running this script."
+    return
+}
+
+# Optionally copy to avoid lock issues (recommended)
+$tempHistoryPath = "$env:TEMP\BraveHistoryCopy.db"
+Copy-Item $braveHistoryPath $tempHistoryPath -Force
+
+# SQL query to get recent browsing history
+$sqlQuery = @"
+SELECT url, title, datetime(last_visit_time/1000000-11644473600, 'unixepoch') AS last_visit
+FROM urls
+ORDER BY last_visit_time DESC
+"@
+
+# Run the query
+$results = Invoke-SqliteQuery -DataSource $tempHistoryPath -Query $sqlQuery
+
+# Output the results in a readable table
+$results | Format-List
+
