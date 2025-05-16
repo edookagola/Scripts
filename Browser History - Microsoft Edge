@@ -1,0 +1,35 @@
+# Ensure PSSQLite module is installed
+if (-not (Get-Module -ListAvailable -Name PSSQLite)) {
+    Install-Module -Name PSSQLite -Scope CurrentUser -Force
+}
+Import-Module PSSQLite
+
+# Path to Edge's History file
+$edgeHistoryPath = "$env:LOCALAPPDATA\Microsoft\Edge\User Data\Default\History"
+
+# Ensure Edge is closed to avoid locking issues
+if (Get-Process -Name "msedge" -ErrorAction SilentlyContinue) {
+    Write-Warning "Microsoft Edge is currently running. Please close it before running this script."
+    return
+}
+
+# Copy database to a temp location to avoid lock errors
+$tempHistoryPath = "$env:TEMP\EdgeHistoryCopy.db"
+Copy-Item $edgeHistoryPath $tempHistoryPath -Force
+
+# Query to fetch browsing history
+$sqlQuery = @"
+SELECT 
+    url, 
+    title, 
+    datetime(last_visit_time/1000000-11644473600, 'unixepoch') AS last_visit
+FROM urls
+ORDER BY last_visit_time DESC
+LIMIT 100;
+"@
+
+# Run the query
+$results = Invoke-SqliteQuery -DataSource $tempHistoryPath -Query $sqlQuery
+
+# Output the results
+$results | Select-Object title, url, last_visit | Format-List
