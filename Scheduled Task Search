@@ -1,0 +1,45 @@
+# Define search terms
+$searchTerms = @("Firefox", "Work")
+
+# Get all scheduled tasks
+$allTasks = Get-ScheduledTask
+
+# Prepare results array
+$matchingTasks = @()
+
+foreach ($task in $allTasks) {
+    $actions = $task.Actions
+    $fullTaskName = ($task.TaskPath + $task.TaskName).Trim()
+
+    foreach ($action in $actions) {
+        foreach ($term in $searchTerms) {
+            if (
+                $task.TaskName -like "*$term*" -or
+                $task.TaskPath -like "*$term*" -or
+                $action.Execute -like "*$term*" -or
+                $action.Arguments -like "*$term*"
+            ) {
+                try {
+                    $info = Get-ScheduledTaskInfo -TaskPath $task.TaskPath -TaskName $task.TaskName
+                } catch {
+                    $info = $null
+                }
+
+                $matchingTasks += [PSCustomObject]@{
+                    TaskName     = $task.TaskName
+                    TaskPath     = $task.TaskPath
+                    Execute      = $action.Execute
+                    Arguments    = $action.Arguments
+                    State        = $task.State
+                    NextRunTime  = $info?.NextRunTime
+                    LastRunTime  = $info?.LastRunTime
+                    LastResult   = $info?.LastTaskResult
+                }
+                break
+            }
+        }
+    }
+}
+
+# Output matching tasks
+$matchingTasks | Format-Table -AutoSize
