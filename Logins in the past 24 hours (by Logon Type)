@@ -1,0 +1,51 @@
+# Run as Administrator
+
+# Time range: last 24 hours
+$startTime = (Get-Date).AddHours(-24)
+
+# Define the event filter: successful logons (ID 4624)
+$filter = @{
+    LogName   = 'Security'
+    Id        = 4624
+    StartTime = $startTime
+}
+
+# Define logon type descriptions
+$logonTypeMap = @{
+    "2"  = "Interactive (Console)"
+    "3"  = "Network (e.g. SMB, shared folders)"
+    "4"  = "Batch"
+    "5"  = "Service"
+    "7"  = "Unlock"
+    "8"  = "NetworkCleartext"
+    "9"  = "NewCredentials (RunAs)"
+    "10" = "RemoteInteractive (RDP/TS)"
+    "11" = "CachedInteractive"
+}
+
+# Fetch and parse events
+$events = Get-WinEvent -FilterHashtable $filter
+
+$logons = foreach ($event in $events) {
+    $xml = [xml]$event.ToXml()
+    $data = $xml.Event.EventData.Data
+
+    $logonType = ($data | Where-Object { $_.Name -eq "LogonType" }).'#text'
+    $logonTypeDesc = if ($logonTypeMap.ContainsKey($logonType)) { $logonTypeMap[$logonType] } else { "Unknown ($logonType)" }
+
+    [PSCustomObject]@{
+        TimeCreated     = $event.TimeCreated
+        UserName        = ($data | Where-Object { $_.Name -eq "TargetUserName" }).'#text'
+        Domain          = ($data | Where-Object { $_.Name -eq "TargetDomainName" }).'#text'
+        LogonType       = $logonType
+        LogonTypeDesc   = $logonTypeDesc
+        IPAddress       = ($data | Where-Object { $_.Name -eq "IpAddress" }).'#text'
+        WorkstationName = ($data | Where-Object { $_.Name -eq "WorkstationName" }).'#text'
+    }
+}
+
+# Group and display by Logon Type
+$logons | Sort-Object TimeCreated | Group-Object LogonTypeDesc | ForEach-Object {
+    Write-Host "`n==== Logon Type: $($_.Name) ====" -ForegroundColor Cyan
+    $_.Group | Format-Table TimeCreated, UserName, Domain, IPAddress, WorkstationName -AutoSize
+}
