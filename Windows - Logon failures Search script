@@ -1,0 +1,48 @@
+# --- MAIN OUTPUT ---
+
+# Always show a summary line
+Write-Output ("[Info] Search window: {0} to {1}" -f $windowStart.ToString('u'), (Get-Date).ToString('u'))
+Write-Output ("[Info] Users found: {0}" -f ($users.Count))
+Write-Output ("[Info] Events parsed: {0}" -f ($records.Count))
+
+if ($Pretty) {
+    "`n=== Users on this host (local + domain from profiles) ===" | Write-Output
+    if ($users) {
+        $users | Sort-Object Scope, Name | Format-Table Scope, Name, Disabled, Lockout -AutoSize | Out-String | Write-Output
+    } else {
+        "No users discovered or access denied." | Write-Output
+    }
+
+    "`n=== Logon events ({0} record(s)) ===" -f ($records.Count) | Write-Output
+    if ($records.Count -gt 0) {
+        $records |
+            Sort-Object TimeCreated |
+            Format-Table TimeCreated, EventId, EventRecordId, Result, User, SourceIP, Workstation, LogonType, Status, SubStatus, FailureReason, ProcessName -AutoSize |
+            Out-String | Write-Output
+    } else {
+        "No matching events found. Try increasing -HoursBack, adding -IncludeSuccess, or -IncludeOtherLogs." | Write-Output
+    }
+} else {
+    if ($records.Count -eq 0) {
+        Write-Output "[Info] No matching events found."
+    }
+}
+
+# Export ordered fields
+$export = $records | Select-Object TimeCreated, EventId, EventRecordId, Result, Computer, User, SourceIP, Workstation, LogonTypeCode, LogonType, LogonProcess, AuthPackage, ProcessName, Status, SubStatus, FailureReason, Subject
+
+if ($OutCsv) {
+    try {
+        $export | Sort-Object TimeCreated | Export-Csv -NoTypeInformation -Encoding UTF8 -Path $OutCsv
+        Write-Output ("[Info] CSV written: {0}" -f $OutCsv)
+    } catch { Write-Warning "CSV write failed: $($_.Exception.Message)" }
+}
+if ($OutJson) {
+    try {
+        $export | Sort-Object TimeCreated | ConvertTo-Json -Depth 5 | Out-File -FilePath $OutJson -Encoding UTF8
+        Write-Output ("[Info] JSON written: {0}" -f $OutJson)
+    } catch { Write-Warning "JSON write failed: $($_.Exception.Message)" }
+}
+
+# Always emit structured objects to pipeline
+$export | Sort-Object TimeCreated
