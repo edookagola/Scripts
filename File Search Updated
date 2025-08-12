@@ -1,72 +1,6 @@
 # Define target file name and hash for searching
-$targetFileName = "g.exe"
-$targetHash = "ea01379b38c6c2d67f707d7e85d52745b5ba192df4fd71edab89c71850f83dbf"
-$excludedPath = "C:\Program Files\CrowdStrike"
-
-# Function to calculate SHA-256 hash of a file
-function Get-FileHashSHA256 {
-    param (
-        [string]$filePath
-    )
-    # Check if the file exists before calculating the hash
-    if (Test-Path $filePath) {
-        try {
-            return (Get-FileHash -Path $filePath -Algorithm SHA256 -ErrorAction SilentlyContinue).Hash
-        } catch {
-            return $null
-        }
-    }
-    return $null
-}
-
-# Recursive search for a specific file name on all mounted drives
-Write-Output "Searching for files named '$targetFileName' on all mounted drives..."
-foreach ($drive in Get-PSDrive -PSProvider FileSystem) {
-    # Skip the drive W:/
-    if ($drive.Root -eq "W:/") {
-        Write-Output "Skipping drive $($drive.Name) (W:/)"
-        continue
-    }
-
-    Write-Output "Searching in drive $($drive.Name):"
-    Get-ChildItem -Path "$($drive.Root)" -Recurse -Filter $targetFileName -File -ErrorAction SilentlyContinue | Where-Object {
-        $_.FullName -notlike "$excludedPath*"
-    } | ForEach-Object {
-        Write-Output "Found potential match at path: $($_.FullName)"
-    }
-}
-
-# Recursive search for files with matching hash across all mounted drives
-Write-Output "Searching for files with matching hash '$targetHash' across all mounted drives..."
-foreach ($drive in Get-PSDrive -PSProvider FileSystem) {
-    # Skip the drive W:/
-    if ($drive.Root -eq "W:/") {
-        Write-Output "Skipping drive $($drive.Name) (W:/)"
-        continue
-    }
-
-    Write-Output "Scanning files in drive $($drive.Name):"
-    Get-ChildItem -Path "$($drive.Root)" -Recurse -File -ErrorAction SilentlyContinue | Where-Object {
-        $_.FullName -notlike "$excludedPath*"
-    } | ForEach-Object {
-        $fileHash = Get-FileHashSHA256 -filePath $_.FullName
-        if ($fileHash -eq $targetHash) {
-            Write-Output "Match found with identical hash at: $($_.FullName)"
-        }
-    }
-}
-
-Write-Output "Search completed."
-
-
-
-//////////////////////////
-
-V2
-
-# Define target file name and hash for searching
-$targetFileName = "g.exe"
-$targetHash = "ea01379b38c6c2d67f707d7e85d52745b5ba192df4fd71edab89c71850f83dbf"
+$targetFileName = "a.mkv"
+$targetHash = "E33D71B44EB39CDAC852683AAAB8C06C491647A76C125A486BF8E7FE7A6E605F"
 $excludedPath = "C:\Program Files\CrowdStrike"
 
 # Function to calculate SHA-256 hash of a file
@@ -87,15 +21,15 @@ function Get-FileHashSHA256 {
 
 # Search for files by name
 Write-Output "==============================="
-Write-Output "🔍 Searching for file: '$targetFileName'"
+Write-Output "Searching for file: '$targetFileName'"
 Write-Output "==============================="
 foreach ($drive in Get-PSDrive -PSProvider FileSystem) {
     if ($drive.Root -eq "W:/") {
-        Write-Output "`n[INFO] Skipping drive $($drive.Name) (W:/)"
+        Write-Output "`n Skipping drive $($drive.Name) (W:/)"
         continue
     }
 
-    Write-Output "`n[INFO] Scanning drive $($drive.Name):"
+    Write-Output "`n Scanning drive $($drive.Name):"
     Get-ChildItem -Path "$($drive.Root)" -Recurse -Filter $targetFileName -File -ErrorAction SilentlyContinue | Where-Object {
         $_.FullName -notlike "$excludedPath*"
     } | ForEach-Object {
@@ -105,24 +39,24 @@ foreach ($drive in Get-PSDrive -PSProvider FileSystem) {
 
 # Search for files by hash
 Write-Output "`n==============================="
-Write-Output "🔍 Searching for file with matching hash:"
+Write-Output "Searching for file with matching hash:"
 Write-Output "Target Hash: $targetHash"
 Write-Output "==============================="
 foreach ($drive in Get-PSDrive -PSProvider FileSystem) {
     if ($drive.Root -eq "W:/") {
-        Write-Output "`n[INFO] Skipping drive $($drive.Name) (W:/)"
+        Write-Output "`n Skipping drive $($drive.Name) (W:/)"
         continue
     }
 
-    Write-Output "`n[INFO] Scanning drive $($drive.Name) for matching hash:"
+    Write-Output "`n Scanning drive $($drive.Name) for matching hash:"
     Get-ChildItem -Path "$($drive.Root)" -Recurse -File -ErrorAction SilentlyContinue | Where-Object {
         $_.FullName -notlike "$excludedPath*"
     } | ForEach-Object {
         $fileHash = Get-FileHashSHA256 -filePath $_.FullName
         if ($fileHash -eq $targetHash) {
-            Write-Output "  [✔] Hash match found at: $($_.FullName)"
+            Write-Output "  Hash match found at: $($_.FullName)"
         }
     }
 }
 
-Write-Output "`n✅ Search completed."
+Write-Output "`Search completed."
