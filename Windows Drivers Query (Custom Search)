@@ -1,0 +1,51 @@
+# All Windows Drivers (Online and Offline) - Filter by Keyword
+# -------------------------------------------------------------
+# Edit the keyword below to search for specific drivers
+$Keyword = "apple"   # <--- Change this to your desired keyword (e.g. "nvidia", "usb", "amd")
+
+Write-Host "=== Searching for drivers matching keyword: '$Keyword' ===`n"
+
+# Get loaded drivers
+Write-Host "=== Loaded Drivers (Get-WindowsDriver -Online) ==="
+$online = Get-WindowsDriver -Online |
+    Select-Object Driver, ProviderName, ClassName, Version, Date, OriginalFileName |
+    Where-Object {
+        $_.Driver -match $Keyword -or
+        $_.ProviderName -match $Keyword -or
+        $_.ClassName -match $Keyword -or
+        $_.OriginalFileName -match $Keyword
+    }
+
+if ($online) {
+    $online | Format-Table -AutoSize
+} else {
+    Write-Host "No loaded drivers found matching '$Keyword'." -ForegroundColor Yellow
+}
+
+# Get all drivers in the driver store
+Write-Host "`n=== All Drivers in Driver Store (Get-WindowsDriver -Online -All) ==="
+$all = Get-WindowsDriver -Online -All |
+    Select-Object Driver, ProviderName, ClassName, Version, Date, OriginalFileName |
+    Where-Object {
+        $_.Driver -match $Keyword -or
+        $_.ProviderName -match $Keyword -or
+        $_.ClassName -match $Keyword -or
+        $_.OriginalFileName -match $Keyword
+    }
+
+if ($all) {
+    $all | Format-Table -AutoSize
+} else {
+    Write-Host "No drivers in store found matching '$Keyword'." -ForegroundColor Yellow
+}
+
+# Determine additional (unloaded) matching drivers
+$onlineDrivers = $online.Driver
+$additional = $all | Where-Object { $onlineDrivers -notcontains $_.Driver }
+
+Write-Host "`n=== Additional Matching Drivers (Present in Store but Not Currently Loaded) ==="
+if ($additional) {
+    $additional | Format-Table -AutoSize Driver, ProviderName, ClassName, Version, Date, OriginalFileName
+} else {
+    Write-Host "No additional matching drivers found." -ForegroundColor Yellow
+}
