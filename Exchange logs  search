@@ -1,0 +1,30 @@
+# Edit your keyword here
+$Keyword = "IP/GET/Keywords"   
+
+$Paths = @(
+    "C:\Program Files\Microsoft\Exchange Server\V15\Logging",
+    "C:\inetpub\logs\LogFiles"
+)
+
+Write-Host "=========================================" 
+Write-Host " Searching Exchange & IIS logs for: '$Keyword'"
+Write-Host "=========================================`n" 
+
+foreach ($Path in $Paths) {
+    if (Test-Path $Path) {
+        Write-Host "`n[+] Searching in: $Path" -ForegroundColor Yellow
+        Get-ChildItem -Path $Path -Recurse -File -Include *.log -ErrorAction SilentlyContinue |
+            Select-String -Pattern $Keyword -SimpleMatch -ErrorAction SilentlyContinue |
+            ForEach-Object {
+                [PSCustomObject]@{
+                    File = $_.Path
+                    Line = $_.LineNumber
+                    Text = $_.Line.Trim()
+                }
+            } | Format-Table -AutoSize
+    } else {
+        Write-Host "`n[-] Path not found: $Path" -ForegroundColor DarkGray
+    }
+}
+
+Write-Host "`nDone searching for '$Keyword'." -ForegroundColor Green
