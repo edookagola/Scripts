@@ -1,0 +1,19 @@
+# All Windows Drivers (Online and Offline) 
+Write-Host "=== Loaded Drivers (Get-WindowsDriver -Online) ==="
+$online = Get-WindowsDriver -Online | Select-Object Driver, ProviderName, ClassName, Version, Date, OriginalFileName
+$online | Format-Table -AutoSize
+
+Write-Host "`n=== All Drivers in Driver Store (Get-WindowsDriver -Online -All) ==="
+$all = Get-WindowsDriver -Online -All | Select-Object Driver, ProviderName, ClassName, Version, Date, OriginalFileName
+$all | Format-Table -AutoSize
+
+# Determine additional drivers present in the store but not currently loaded
+$onlineDrivers = $online.Driver
+$additional = $all | Where-Object { $onlineDrivers -notcontains $_.Driver }
+
+Write-Host "`n=== Additional Drivers (Present in Store but Not Currently Loaded) ==="
+if ($additional) {
+    $additional | Format-Table -AutoSize Driver, ProviderName, ClassName, Version, Date, OriginalFileName
+} else {
+    Write-Host "No additional drivers found."
+}
