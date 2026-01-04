@@ -1,0 +1,56 @@
+Background/Purpose
+	The scope of this wiki is to serve as a comprehensive reference guide for FFFF CCCC analysts to investigate XLL file(s) and their associated detections. An XLL File is an extension file for Microsfot Excel add-ins, a regular PE-DLL file. When, loaded they invoke the export functions of the XLL and are known to be abused to load malicious code (similar to methods Auto_Open and Auto_Close in VBA Macros). Tracked through MITRE T1137.006 (https://attack.mitre.org/techniques/T1137/006/), This technique is frequently used by Threat Actors and Red Teams to evade detection as it leverages trusted process to load malicious code. The purpose of this wiki is to provide analysts with a structured approach to effectively investigate, triage and remdiate malicious XLL sideloading incidents, helping to differentiate between legitimate and potential malicious behaviour. 
+
+
+What can I expect to learn? 
+	This wiki will equip analysts with essential knowledge and skills to:
+		1. Understanding XLL Abuse and analysis
+		2. Identify a legitimate vs suspicious XLL loading patterns
+		3. Understand and Analyse XLL fucntion(s) with ExcelDNA to identify malicious code. 
+		
+Contents
+- Overview
+- Template(s) / Pattern IDs
+- Sample detonation(s)	
+- Analysing malicious XLL file(s)
+- Resources
+   → Example Incidents of XLL abuse
+   → Complimentary reading
+		
+Overview
+	XLL files are a type of Microsoft Excel add-in that extend Excel functionality. Technically, they are portable executables (PE) in the form of DLLs that Excel can load to provide additional functions via an Application Programming Interface (API). Unlike typical Excel documents (.XLSX) or macro-enabled files (.XLSM), XLL add-ins are designed to implement performance-oriented features and custom functions. Threat actors have increasingly weaponized XLL files as a malware delivery vector, a shift driven largely by defensive changes in Office that have reduced the effectiveness of traditional macro-based threats. Delivery Mechanisms often include Phishing emails with malicious XLL attachments or links remain the most common delivery method. When opened, Excel launches the add-in and prompts the user to enable it. Once enabled, malicious code runs automatically. Because XLL files share an icon and association with Excel, they can appear familiar to users and evade casual suspicion. 
+
+Execution and Abuse
+◇ Unlike VBA macros, only a single click is needed to load and execute an XLL add-in—the user doesn’t have to explicitly “enable content” beyond installing the add-in. This makes them a more user-friendly option for attackers. XLL files commonly abuse functions like xlAutoOpen, which Excel calls automatically upon activation, to launch malicious actions such as:
+   ▪ Dropping additional malware onto the system
+   ▪ Downloading remote payloads
+   ▪ Executing embedded malicious code
+
+
+- Template(s) / Pattern IDs
+- Sample detonation(s)	
+
+
+Complimentary Reading
+https://unit42.paloaltonetworks.com/excel-add-ins-malicious-xll-files-agent-tesla/ 
+https://threatresearch.ext.hp.com/how-attackers-use-xll-malware-to-infect-systems/# 
+https://blog.talosintelligence.com/xlling-in-excel-malicious-add-ins/ 
+HP Wolf Security+1
+Cisco Talos Blog+1
+HP Wolf Security+1
+HP Wolf Security
+HP Wolf Security
+Quick Heal Blog
+
+xlautoopen
+https://learn.microsoft.com/en-us/office/client-developer/excel/
+
+https: //github.com/augustoproiete/exceldna-unpack
+https://learn.microsoft.com/en-us/office/client-developer/excel/developing-excel-xlls
+
+
+
+
+
+
+
